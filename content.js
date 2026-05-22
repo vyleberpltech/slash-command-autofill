@@ -12,12 +12,29 @@ function generateRandomCode() {
     return code;
 }
 
+function getEditableElement(element) {
+    if (!element) {
+        return null;
+    }
+
+    if (element.isContentEditable) {
+        return element;
+    }
+
+    return element.closest?.('[contenteditable="true"]') || element;
+}
+
 function isTextInput(element) {
     if (!element) {
         return false;
     }
 
-    const textInputTypes = ['', 'text', 'email', 'search', 'url', 'tel'];
+    const ignoredInputTypes = ['button', 'checkbox', 'color', 'file', 'hidden', 'image', 'radio', 'range', 'reset', 'submit'];
+    const textInputTypes = ['', 'text', 'email', 'search', 'url', 'tel', 'password'];
+    if (element.tagName === 'INPUT') {
+        return textInputTypes.includes(element.type) || !ignoredInputTypes.includes(element.type);
+    }
+
     return (element.tagName === 'INPUT' && textInputTypes.includes(element.type)) || element.tagName === 'TEXTAREA' || element.isContentEditable;
 }
 
@@ -56,6 +73,8 @@ function getEditableValue(element) {
 }
 
 function replaceRandomCodeCommand(element) {
+    element = getEditableElement(element);
+
     if (!isTextInput(element) || getEditableValue(element).trim().toLowerCase() !== RANDOM_CODE_COMMAND) {
         return;
     }
@@ -65,10 +84,10 @@ function replaceRandomCodeCommand(element) {
 
 document.addEventListener('input', (event) => {
     replaceRandomCodeCommand(event.target);
-});
+}, true);
 
 document.addEventListener('keyup', (event) => {
     if (event.key.toLowerCase() === 'n') {
         replaceRandomCodeCommand(event.target);
     }
-});
+}, true);
