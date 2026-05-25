@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Slash Command AutoFill",
   "version": "1.0.3",
-  "description": "Tự động tạo mã ngẫu nhiên khi gõ /n vào ô input.",
+  "description": "Tự động tạo mã khi gõ /n, email khi gõ /e, hoặc mã gần nhất khi gõ /l.",
   "content_scripts": [
     {
       "matches": [

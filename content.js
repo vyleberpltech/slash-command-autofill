@@ -1,6 +1,10 @@
 const RANDOM_CODE_COMMAND = '/n';
+const RANDOM_EMAIL_COMMAND = '/e';
+const LATEST_CODE_COMMAND = '/l';
 const RANDOM_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const RANDOM_CODE_LENGTH = 6;
+const EMAIL_DOMAIN = '@vy.le.com';
+let latestRandomCode = '';
 
 function generateRandomCode() {
     let code = '';
@@ -69,25 +73,42 @@ function setEditableValue(element, value) {
 }
 
 function getEditableValue(element) {
-    return element.isContentEditable ? element.textContent : element.value;
+    return element.isContentEditable ? element.textContent || '' : element.value || '';
 }
 
-function replaceRandomCodeCommand(element) {
+function getReplacementValue(command) {
+    if (command === RANDOM_CODE_COMMAND) {
+        latestRandomCode = generateRandomCode();
+        return latestRandomCode;
+    }
+
+    if (command === RANDOM_EMAIL_COMMAND) {
+        latestRandomCode = latestRandomCode || generateRandomCode();
+        return `${latestRandomCode}${EMAIL_DOMAIN}`;
+    }
+
+    if (command === LATEST_CODE_COMMAND) {
+        latestRandomCode = latestRandomCode || generateRandomCode();
+        return latestRandomCode;
+    }
+
+    return null;
+}
+
+function replaceSlashCommand(element) {
     element = getEditableElement(element);
 
-    if (!isTextInput(element) || getEditableValue(element).trim().toLowerCase() !== RANDOM_CODE_COMMAND) {
+    if (!isTextInput(element)) {
         return;
     }
 
-    setEditableValue(element, generateRandomCode());
+    const command = String(getEditableValue(element)).trim().toLowerCase();
+    const replacementValue = getReplacementValue(command);
+    if (replacementValue) {
+        setEditableValue(element, replacementValue);
+    }
 }
 
 document.addEventListener('input', (event) => {
-    replaceRandomCodeCommand(event.target);
-}, true);
-
-document.addEventListener('keyup', (event) => {
-    if (event.key.toLowerCase() === 'n') {
-        replaceRandomCodeCommand(event.target);
-    }
+    replaceSlashCommand(event.target);
 }, true);
