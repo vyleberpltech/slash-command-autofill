@@ -1,6 +1,6 @@
-const RANDOM_CODE_COMMAND = '/n';
-const RANDOM_EMAIL_COMMAND = '/e';
-const LATEST_CODE_COMMAND = '/l';
+const RANDOM_CODE_COMMAND = '@n';
+const RANDOM_EMAIL_COMMAND = '@e';
+const LATEST_CODE_COMMAND = '@l';
 const RANDOM_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const RANDOM_CODE_LENGTH = 6;
 const EMAIL_DOMAIN = '@vy.le.com';
@@ -95,7 +95,7 @@ function getReplacementValue(command) {
     return null;
 }
 
-function replaceSlashCommand(element) {
+function replaceCommand(element) {
     element = getEditableElement(element);
 
     if (!isTextInput(element)) {
@@ -110,5 +110,5 @@ function replaceSlashCommand(element) {
 }
 
 document.addEventListener('input', (event) => {
-    replaceSlashCommand(event.target);
+    replaceCommand(event.target);
 }, true);
