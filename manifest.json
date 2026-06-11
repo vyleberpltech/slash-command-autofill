@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Slash Command AutoFill",
   "version": "1.0.3",
-  "description": "Tự động tạo mã khi gõ @n, email khi gõ @e, hoặc mã gần nhất khi gõ @l.",
+  "description": "Tự động fill Bid360 forms bằng @n/@e/@w/@u/@b/@p/@r/@d/@g/@o/@l.",
   "content_scripts": [
     {
       "matches": [
