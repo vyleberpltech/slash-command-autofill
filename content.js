@@ -13,6 +13,8 @@ const RANDOM_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const RANDOM_CODE_LENGTH = 6;
 const EMAIL_DOMAIN = '@vy.le.com';
 const DEFAULT_PHONE = '1234567899';
+const DEFAULT_POSTAL_CODE = '45212';
+const DEFAULT_REQUIRED_NUMBER = '1';
 const BUILDER_NAME_PREFIX = 'Buidler Vy Le';
 const DEALER_NAME_PREFIX = 'Dealer Vy Le';
 const GENERAL_CONTRACTOR_NAME_PREFIX = 'General Contractor Vy Le';
@@ -160,6 +162,21 @@ function getFieldText(element) {
         element.getAttribute?.('autocomplete'),
     ];
 
+    // Bid360's shared TextBox component places attributes such as `name` on
+    // its wrapper, rather than on the input it renders. Read that nearby
+    // metadata as well, but stop at the active modal so unrelated forms do
+    // not influence the match.
+    let parent = element.parentElement;
+    while (parent && !parent.classList?.contains('modal-content')) {
+        parts.push(
+            parent.getAttribute?.('aria-label'),
+            parent.getAttribute?.('placeholder'),
+            parent.getAttribute?.('name'),
+            parent.getAttribute?.('id'),
+        );
+        parent = parent.parentElement;
+    }
+
     if (element.id) {
         const escapedId = window.CSS?.escape ? CSS.escape(element.id) : element.id.replace(/"/g, '\\"');
         const label = document.querySelector(`label[for="${escapedId}"]`);
@@ -177,7 +194,10 @@ function fieldMatches(element, names) {
 }
 
 function getFormScope(element) {
-    return element.closest?.('form') || document;
+    // Most Bid360 dialogs use CustomModal rather than a native form. Scoping
+    // to the closest dialog is essential when a Company Create dialog opens
+    // over Project Create: both contain a name field.
+    return element.closest?.('form, .modal-content') || document;
 }
 
 function getFillableFields(scope) {
@@ -201,11 +221,20 @@ function findField(scope, names) {
         return labelField;
     }
 
-    const wrapper = Array.from(scope.querySelectorAll('div, section, fieldset, li, td')).find((item) => {
-        return names.some((name) => normalizeText(item.textContent).includes(normalizeText(name))) && item.querySelector('input, textarea, select, [contenteditable="true"]');
-    });
+    // Prefer the smallest matching wrapper. A modal body contains the text of
+    // every field, so choosing the first matching div would always return the
+    // modal's first input instead of the intended field.
+    const wrappers = Array.from(scope.querySelectorAll('div, section, fieldset, li, td'))
+        .map((item) => ({
+            item,
+            fields: getFillableFields(item),
+        }))
+        .filter(({ item, fields }) => {
+            return fields.length > 0 && names.some((name) => normalizeText(item.textContent).includes(normalizeText(name)));
+        })
+        .sort((left, right) => left.fields.length - right.fields.length);
 
-    return wrapper?.querySelector?.('input, textarea, select, [contenteditable="true"]') || null;
+    return wrappers[0]?.fields[0] || null;
 }
 
 function findNextFieldAfter(scope, field) {
@@ -249,10 +278,32 @@ function fillCommonEntityFormFromName(element, namePrefix, nameAliases = ['name'
     fillFieldIfPresent(findField(scope, ['address line 1', 'addressline1', 'address 1', 'address1']), latestRandomCode);
     fillFieldIfPresent(findField(scope, ['address line 2', 'addressline2', 'address 2', 'address2']), latestRandomCode);
     fillFieldIfPresent(findField(scope, ['city']), latestRandomCode);
-    fillFieldIfPresent(findField(scope, ['zip/postal code', 'zip postal code', 'postal code', 'zipcode', 'zip']), latestRandomCode);
+    fillFieldIfPresent(findField(scope, ['zip/postal code', 'zip postal code', 'postal code', 'zipcode', 'zip']), DEFAULT_POSTAL_CODE);
     fillFieldIfPresent(emailField, `${latestRandomCode}${EMAIL_DOMAIN}`);
     fillFieldIfPresent(phoneField || findNextFieldAfter(scope, emailField), DEFAULT_PHONE);
     selectFirstOptions(scope);
+    return true;
+}
+
+function fillRequiredProjectFields(scope) {
+    const numericFields = [
+        ['total units', 'totalunits', 'number of units'],
+        ['total unit types', 'totalunittypes', 'number of unit types'],
+        ['number of buildings', 'buildings', 'totalbuildings'],
+        ['number of residential floors', 'residentialfloors'],
+        ['number of floors', 'totalfloors'],
+    ];
+
+    numericFields.forEach((names) => fillFieldIfPresent(findField(scope, names), DEFAULT_REQUIRED_NUMBER));
+    fillFieldIfPresent(findField(scope, ['description', 'project description']), `Project description ${latestRandomCode}`);
+}
+
+function autofillProjectFormFromName(element, namePrefix, nameAliases) {
+    if (!fillCommonEntityFormFromName(element, namePrefix, nameAliases)) {
+        return false;
+    }
+
+    fillRequiredProjectFields(getFormScope(element));
     return true;
 }
 
@@ -284,6 +335,7 @@ function autofillContactFormFromFirstName(element) {
     setEditableValue(fields.title, latestRandomCode);
     setEditableValue(fields.email, `${latestRandomCode}${EMAIL_DOMAIN}`);
     setEditableValue(fields.phone, DEFAULT_PHONE);
+    selectFirstOptions(scope);
     checkAllCheckboxes(scope);
     return true;
 }
@@ -327,11 +379,11 @@ function replaceCommand(element) {
         return;
     }
 
-    if (command === PROJECT_FORM_COMMAND && fillCommonEntityFormFromName(element, PROJECT_NAME_PREFIX, ['name', 'project name', 'projectname'])) {
+    if (command === PROJECT_FORM_COMMAND && autofillProjectFormFromName(element, PROJECT_NAME_PREFIX, ['name', 'project name', 'projectname'])) {
         return;
     }
 
-    if (command === REMODELING_FORM_COMMAND && fillCommonEntityFormFromName(element, REMODELING_NAME_PREFIX, ['name', 'remodeling name', 'remodelingname'])) {
+    if (command === REMODELING_FORM_COMMAND && autofillProjectFormFromName(element, REMODELING_NAME_PREFIX, ['name', 'remodeling name', 'remodelingname'])) {
         return;
     }
 
