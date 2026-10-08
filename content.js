@@ -85,7 +85,11 @@ function setTextInputValue(inputElement, value) {
     }
 
     inputElement.focus();
-    inputElement.setSelectionRange?.(value.length, value.length);
+    const supportsSelectionRange = inputElement.tagName === 'TEXTAREA'
+        || ['text', 'search', 'tel', 'url', 'password'].includes(inputElement.type);
+    if (supportsSelectionRange) {
+        inputElement.setSelectionRange(value.length, value.length);
+    }
     dispatchValueEvents(inputElement);
 }
 

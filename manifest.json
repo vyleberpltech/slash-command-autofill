@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Slash Command AutoFill",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Tự động fill Bid360 forms bằng @n/@e/@w/@u/@b/@p/@r/@d/@g/@o/@l.",
   "content_scripts": [
     {
