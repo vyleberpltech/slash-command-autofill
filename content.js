@@ -11,17 +11,19 @@ const OWNER_DEVELOPER_FORM_COMMAND = '@o';
 const LOCATION_FORM_COMMAND = '@l';
 const RANDOM_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const RANDOM_CODE_LENGTH = 6;
-const EMAIL_DOMAIN = '@vy.le.com';
+const EMAIL_DOMAIN = SLASH_COMMAND_AUTOFILL_CONFIG.emailDomain.startsWith('@')
+    ? SLASH_COMMAND_AUTOFILL_CONFIG.emailDomain
+    : `@${SLASH_COMMAND_AUTOFILL_CONFIG.emailDomain}`;
 const DEFAULT_PHONE = '1234567899';
 const DEFAULT_POSTAL_CODE = '45212';
 const DEFAULT_REQUIRED_NUMBER = '1';
-const BUILDER_NAME_PREFIX = 'Buidler Vy Le';
-const DEALER_NAME_PREFIX = 'Dealer Vy Le';
-const GENERAL_CONTRACTOR_NAME_PREFIX = 'General Contractor Vy Le';
-const OWNER_DEVELOPER_NAME_PREFIX = 'Owner Developer Vy Le';
-const PROJECT_NAME_PREFIX = 'Project Vy Le';
-const REMODELING_NAME_PREFIX = 'Remodeling Vy Le';
-const LOCATION_NAME_PREFIX = 'Location Vy Le';
+const BUILDER_NAME_PREFIX = `Buidler ${SLASH_COMMAND_AUTOFILL_CONFIG.displayName}`;
+const DEALER_NAME_PREFIX = `Dealer ${SLASH_COMMAND_AUTOFILL_CONFIG.displayName}`;
+const GENERAL_CONTRACTOR_NAME_PREFIX = `General Contractor ${SLASH_COMMAND_AUTOFILL_CONFIG.displayName}`;
+const OWNER_DEVELOPER_NAME_PREFIX = `Owner Developer ${SLASH_COMMAND_AUTOFILL_CONFIG.displayName}`;
+const PROJECT_NAME_PREFIX = `Project ${SLASH_COMMAND_AUTOFILL_CONFIG.displayName}`;
+const REMODELING_NAME_PREFIX = `Remodeling ${SLASH_COMMAND_AUTOFILL_CONFIG.displayName}`;
+const LOCATION_NAME_PREFIX = `Location ${SLASH_COMMAND_AUTOFILL_CONFIG.displayName}`;
 let latestRandomCode = '';
 
 function generateRandomCode() {
